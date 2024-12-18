@@ -27,7 +27,7 @@ namespace AdaBoost
             string file_path = "./adaboost_dataset.csv";
             READCSV read_csv = new READCSV();
             var (X, label) = read_csv.Read(file_path);
-            ADABOOST adaboost = new ADABOOST(1);
+            ADABOOST adaboost = new ADABOOST(50);
             adaboost.Fit(X, label);
 
             int[] pred = adaboost.Predict(X);
@@ -38,7 +38,10 @@ namespace AdaBoost
 
             for(int i = 0; i < X.GetLength(0); i++)
             {
-                //Console.WriteLine($"{label[i]}, {pred[i]}");
+                if (pred[i] != label[i])
+                {
+                    Console.WriteLine($"{i}, {label[i]}, {pred[i]}");
+                }
             }
 
         }

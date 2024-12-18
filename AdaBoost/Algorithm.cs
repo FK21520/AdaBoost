@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
+﻿using System.IO;
 
 namespace AdaBoostAlgorithm
 {
@@ -15,7 +11,6 @@ namespace AdaBoostAlgorithm
         private double[,] X;
         private int[] z;
 
-        
 
         public DECISIONSTUMP(int? axis = null, int? sign = null, double? threshold = null)
         {
@@ -30,14 +25,7 @@ namespace AdaBoostAlgorithm
             this.axis = axis;
             this.sign = sign;
             this.threshold = threshold;
-
-            //Console.WriteLine("x: " + string.Join(", ", x));
-            //Console.WriteLine("y: " + string.Join(", ", y));
-            //Console.WriteLine("z: " + string.Join(", ", z));
-
-        }
-
-       
+        } 
 
         //ソート関数
         private (double[,] sort_X, int[] sort_label, double[] sort_sample_weight) SortData(
@@ -69,18 +57,15 @@ namespace AdaBoostAlgorithm
                     sort_X[i, j] = X[sort_index[i], j];
                 }
             }
-
             return (sort_X, sort_label, sort_sample_weight);
         }
 
         private (int sign, double threshold, double error) FitOnedim(double[,] X, int[] label, double[] sample_weight, int axis)
         {
             int N = label.Length; //配列の要素数
-
+            
             //ソート
             var (sort_X, sort_label, sort_sample_weight) = SortData(X, label, sample_weight, axis);
-
-            //Console.WriteLine("sort: " + string.Join(", ", sort_result));
 
             //予測の計算
             int[,] pred = new int[N - 1, N];
@@ -88,49 +73,75 @@ namespace AdaBoostAlgorithm
             {
                 for (int j = 0; j < N; j++)
                 {
-                    pred[i, j] = j <= i ? -1 : 1;
+                    pred[i, j] = j <= i ? -1 : 1; //三角行列
                 }
+            }
+
+            //ご分類の計算
+            int[,] miss = new int[N - 1, N];
+            for(int i = 0; i < N -1; i++)
+            {
+                for (int j = 0; j < N; j++)
+                {
+                    miss[i, j] = pred[i, j] != sort_label[j] ? 1 : 0; //正解なら0,誤りは1 
+                }              
             }
 
             //誤差の計算
-            double[] errs = new double[2]; // 正と負の誤差
+            double[,] error = new double[2, N - 1];           
+            for (int i = 0; i < N - 1; i++)
+            {
+                for (int j = 0; j < N; j++)
+                {
+                    error[0, i] += miss[i, j] * sort_sample_weight[j];
+                }
+            }
 
             for (int i = 0; i < N - 1; i++)
             {
-                errs[0] = 0.0;
-                errs[1] = 0.0;
-
                 for (int j = 0; j < N; j++)
                 {
-                    if (pred[i, j] != sort_label[j])
+                    error[1, i] += (1 - miss[i, j]) * sort_sample_weight[j];
+                }
+            }
+            
+            int rows = error.GetLength(0); // error の行数
+            int col = error.GetLength(1); // error の列数
+            double min_error = double.MaxValue;
+            int min_row = -1, min_col = -1;
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    if (error[i, j] < min_error)
                     {
-                        errs[0] += sort_sample_weight[j];
-                    }
-                    else
-                    {
-                        errs[1] += sort_sample_weight[j];
+                        min_error = error[i, j];
+                        min_row = i;
+                        min_col = j;
                     }
                 }
             }
 
-
             // 閾値と信頼値の計算
-            int min_index = Array.IndexOf(errs, errs.Min());
-            int sign = (errs[min_index] < 0.5) ? 1 : -1; // 信頼値の符号設定
-            double threshold = (sort_X[min_index, axis] + sort_X[min_index + 1, axis]) / 2.0; //閾値
-            double error = errs[min_index]; //エラー
-
-            return (sign, threshold, error);
+            int sign = -2 * min_row + 1;
+            if (min_col + 1 >= sort_X.GetLength(0))
+            {
+                throw new InvalidOperationException("Threshold calculation index out of range.");
+            }
+            double threshold = (sort_X[min_col, axis] + sort_X[min_col + 1, axis]) / 2.0;
+            double errors = min_error;          
+            return (sign, threshold, errors);
         }
 
-        public void Fit(double[,] X, int[] label, double[] sample_weight)
+        public void DsFit(double[,] X, int[] label, double[] sample_weight)
         {
             int N = X.GetLength(0); //列数
             int D = X.GetLength(1); //行数
-
-            int[] signs = new int[D];
-            double[] thresholds = new double[D];
-            double[] errors = new double[D];
+           
+            int[] sign = new int[D];
+            double[] threshold = new double[D];
+            double[] error = new double[D];
 
             // 要素がすべて 1/N の配列を生成
             if (sample_weight == null)
@@ -141,19 +152,19 @@ namespace AdaBoostAlgorithm
             for (int axis = 0; axis < D; axis++)
             {
                 // 各次元ごとに fit_onedim を実行して結果を収集
-                (int sign, double threshold, double error) = FitOnedim(X, label, sample_weight, axis);
-                signs[axis] = sign;
-                thresholds[axis] = threshold;
-                errors[axis] = error;
+                (int signs, double thresholds, double errors) = FitOnedim(X, label, sample_weight, axis);
+                sign[axis] = signs;
+                threshold[axis] = thresholds;
+                error[axis] = errors;
             }
 
             // 誤差が最小の次元を選択
-            int best_axis = Array.IndexOf(errors, errors.Min());
+            int best_axis = Array.IndexOf(error, error.Min());
             this.axis = best_axis;
-            this.sign = signs[best_axis];
-            this.threshold = thresholds[best_axis];
+            this.sign = sign[best_axis];
+            this.threshold = threshold[best_axis];           
         }
-        public int[] DpPredict(double[,] X)
+        public int[] DsPredict(double[,] X)
         {
             int N = X.GetLength(0);
             int[] predictions = new int[N];
@@ -163,10 +174,8 @@ namespace AdaBoostAlgorithm
                 double value = X[i, axis.Value];
                 predictions[i] = (value < threshold) ? -sign.Value : sign.Value;
             }
-
             return predictions;
         }
-
     }
 
     class ADABOOST
@@ -194,32 +203,16 @@ namespace AdaBoostAlgorithm
             int N = label.Length;
             double[] weight = Enumerable.Repeat(1.0 / N, N).ToArray(); //重みも初期化
 
+            Console.WriteLine($"{num_classifiers}");
             for (int m = 0; m < num_classifiers; m++)
             {
                 //基本分類器の訓練
-                classifiers[m].Fit(X, label, weight);
+                classifiers[m].DsFit(X, label, weight);
 
                 //誤りの判定
-                
-                int[] base_pred = classifiers[m].DpPredict(X); // 同じ値をN回繰り返す
+                int[] base_pred = classifiers[m].DsPredict(X); // 同じ値をN回繰り返す
                 bool[] miss = base_pred.Zip(label, (pred, actual) => pred != actual).ToArray();
-                for(int i = 0; i < base_pred.Length; i++)
-                {
-                    Console.WriteLine($"{base_pred[i]}, {label[i]}");
-                }
-               
-                //for(int i = 0; i < miss.GetLength(0); i++)
-                //{
-                //    if (miss[i] == false)
-                //    {
-                //        //Console.WriteLine("Fale");
-                //    }else if (miss[i] == true)
-                //    {
-                //        Console.WriteLine($"{i}");
-                //    }
-                //}
-               
-                //イプシロンの計算
+             
                 // イプシロンの計算
                 double eps = weight.Zip(miss, (w, m) => m ? w : 0.0).Sum();
                 if (eps == 0)
@@ -227,7 +220,6 @@ namespace AdaBoostAlgorithm
                     eps = Double.Epsilon;  // 誤差が0の場合の対策
                     
                 }
-
 
                 //s信頼地の計算(アルファ)
                 alpha[m] = Math.Log(1.0 / eps - 1);
@@ -257,7 +249,7 @@ namespace AdaBoostAlgorithm
             //予測の集約
             for (int i = 0; i < num_classifiers; i++)
             {
-                int[] predictions = classifiers[i].DpPredict(X);
+                int[] predictions = classifiers[i].DsPredict(X);
 
                 for (int j = 0; j < N; j++)
                 {
@@ -277,7 +269,6 @@ namespace AdaBoostAlgorithm
             try
             {
                 var lines = File.ReadAllLines(file_path).Skip(1).ToArray();
-
                 var x = lines.Select(line => double.Parse(line.Split(',')[0])).ToArray();
                 var y = lines.Select(line => double.Parse(line.Split(',')[1])).ToArray();
                 var label = lines.Select(line => int.Parse(line.Split(',')[2])).ToArray();
@@ -292,7 +283,6 @@ namespace AdaBoostAlgorithm
                 throw;
             }
         }
-
 
         //2次元データを結合して2次元データにする
         static double[,] CombineTo2D(double[] x, double[] y)
@@ -310,10 +300,7 @@ namespace AdaBoostAlgorithm
                 result[i, 1] = y[i];  
 
             }
-
             return result;
         }
     }
-
-   
 }
