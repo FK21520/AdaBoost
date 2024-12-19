@@ -4,15 +4,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:AdaBoost"
+      xmlns:oxy="http://oxyplot.org/wpf"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Page1">
 
-    <Grid>
-        <Label x:Name="difficulty_label" Content="難易度を選択してください" 
-            HorizontalAlignment="Center" VerticalAlignment="Center" 
-            FontSize= "50"
-            Margin="0,50,0,0" />
-
+    <Grid x:Name="MainGrid">
+        <oxy:PlotView x:Name="PlotView" />
     </Grid>
+
+    
 </Page>

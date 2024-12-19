@@ -1,4 +1,11 @@
 ﻿using System.IO;
+using OxyPlot;
+using OxyPlot.Series;
+using OxyPlot.Wpf;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+using System.Xml.Linq;
 
 namespace AdaBoostAlgorithm
 {
@@ -301,6 +308,61 @@ namespace AdaBoostAlgorithm
 
             }
             return result;
+        }
+    }
+
+    class PLOT
+    {
+        //public PLOT(double[,] X, int label)
+        //{
+
+        //}
+
+        public PlotView PlotScatter(double[,] X, int[] label)
+        {
+            //辞書でラベルの色を定義
+            var label_color = new Dictionary<int, OxyColor>
+            {
+                { -1, OxyColors.Blue },
+                { 1, OxyColors.Red }
+            };
+            var plot_model = new PlotModel 
+            {
+                Title = "Scatter Plot",
+                TitleFontSize = 20, // タイトルフォントサイズ
+                TitlePadding = 10,  // タイトルの余白
+            };
+
+
+
+            // 各ラベルごとに散布図シリーズを作成
+            foreach (var labels in label_color.Keys)
+            {
+                var scatter_series = new ScatterSeries
+                {
+                    MarkerType = MarkerType.Circle,
+                    MarkerFill = label_color[labels],
+                    Title = $"Label {labels}"
+                };
+
+
+                // ラベルに対応するデータポイントを追加
+                for (int i = 0; i < X.GetLength(0); i++)
+                {
+                    if (label[i] == labels)
+                    {
+                        scatter_series.Points.Add(new ScatterPoint(X[i, 0], X[i, 1]));
+                    }
+                }
+                plot_model.Series.Add(scatter_series);
+            }
+
+            return new PlotView
+            {
+                Model = plot_model
+            };
+
+
         }
     }
 }

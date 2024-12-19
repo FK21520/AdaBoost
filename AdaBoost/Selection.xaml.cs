@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AdaBoostAlgorithm;
+using OxyPlot.Wpf;
 
 namespace AdaBoost
 {
@@ -43,6 +44,9 @@ namespace AdaBoost
                     Console.WriteLine($"{i}, {label[i]}, {pred[i]}");
                 }
             }
+            PLOT plot = new PLOT();
+            var plot_view = plot.PlotScatter(X, label);
+            MainGrid.Children.Add(plot_view); // WPF のウィンドウで表示
 
         }
 
@@ -61,5 +65,7 @@ namespace AdaBoost
             // 正解率を計算
             return (double)correct_count / true_label.Length;
         }
+
+       
     }
 }
