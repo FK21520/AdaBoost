@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AdaBoostAlgorithm;
+using OxyPlot;
 using OxyPlot.Wpf;
 
 namespace AdaBoost
@@ -44,9 +45,17 @@ namespace AdaBoost
                     Console.WriteLine($"{i}, {label[i]}, {pred[i]}");
                 }
             }
+            //PLOT plot = new PLOT();
+            //var plot_view = plot.PlotScatter(X, label);
+            //MainGrid.Children.Add(plot_view); // WPF のウィンドウで表示
             PLOT plot = new PLOT();
-            var plot_view = plot.PlotScatter(X, label);
-            MainGrid.Children.Add(plot_view); // WPF のウィンドウで表示
+            PlotView plotView = plot.PlotDecisionRegion(X, label, adaboost);
+
+            // WPF での表示 (適切な WPF アプリケーションで使用)
+             MainGrid.Children.Add(plotView);  // WPF のパネルに追加
+
+            // ここでは Console で結果を表示している
+            Console.WriteLine("プロットを表示しました。");
 
         }
 

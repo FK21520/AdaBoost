@@ -10,7 +10,7 @@
       Title="Page1">
 
     <Grid x:Name="MainGrid">
-        <oxy:PlotView x:Name="PlotView" />
+      
     </Grid>
 
     

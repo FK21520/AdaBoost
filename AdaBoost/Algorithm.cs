@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
+using System.Reflection.Emit;
 
 namespace AdaBoostAlgorithm
 {
@@ -17,7 +18,6 @@ namespace AdaBoostAlgorithm
 
         private double[,] X;
         private int[] z;
-
 
         public DECISIONSTUMP(int? axis = null, int? sign = null, double? threshold = null)
         {
@@ -171,6 +171,7 @@ namespace AdaBoostAlgorithm
             this.sign = sign[best_axis];
             this.threshold = threshold[best_axis];           
         }
+
         public int[] DsPredict(double[,] X)
         {
             int N = X.GetLength(0);
@@ -201,7 +202,6 @@ namespace AdaBoostAlgorithm
             for (int i = 0; i < num_classifiers; i++)
             {
                 classifiers.Add(new DECISIONSTUMP());
-
             }
         }
 
@@ -224,8 +224,7 @@ namespace AdaBoostAlgorithm
                 double eps = weight.Zip(miss, (w, m) => m ? w : 0.0).Sum();
                 if (eps == 0)
                 {
-                    eps = Double.Epsilon;  // 誤差が0の場合の対策
-                    
+                    eps = Double.Epsilon;  // 誤差が0の場合の対策      
                 }
 
                 //s信頼地の計算(アルファ)
@@ -245,7 +244,6 @@ namespace AdaBoostAlgorithm
                     weight[i] /= sum_weight;
                 }
             }             
-
         }
 
         public int[] Predict(double[,] X)
@@ -311,33 +309,41 @@ namespace AdaBoostAlgorithm
         }
     }
 
+    //データポイントを用意してデータポイントに対して予測を行い、境界の色分けをする
     class PLOT
     {
-        //public PLOT(double[,] X, int label)
-        //{
-
-        //}
-
-        public PlotView PlotScatter(double[,] X, int[] label)
+        public PlotView PlotDecisionRegion(double[,] X, int[] label, ADABOOST model)
         {
+            int N = X.GetLength(0);
+            double min_x = X.Cast<double>().Min();
+            double max_x = X.Cast<double>().Max();
+            double min_y = X.Cast<double>().Min();
+            double max_y = X.Cast<double>().Max();
+
+            // 予測範囲のグリッドを作成
+            int resolution = 100; // 解像度
+            double step = Math.Max((max_x - min_x) / resolution, (max_y - min_y) / resolution);
+
+            var plot_model = new PlotModel { Title = "AdaBoost Decision Region" };
+
             //辞書でラベルの色を定義
             var label_color = new Dictionary<int, OxyColor>
-            {
-                { -1, OxyColors.Blue },
-                { 1, OxyColors.Red }
-            };
-            var plot_model = new PlotModel 
-            {
-                Title = "Scatter Plot",
-                TitleFontSize = 20, // タイトルフォントサイズ
-                TitlePadding = 10,  // タイトルの余白
-            };
+                {
+                    { -1, OxyColors.Blue },
+                    { 1, OxyColors.Red }
+                };
 
-
-
+   
             // 各ラベルごとに散布図シリーズを作成
             foreach (var labels in label_color.Keys)
             {
+                var grid_scatter_series = new ScatterSeries
+                {
+                    MarkerType = MarkerType.Circle,
+                    MarkerFill = OxyColor.FromAColor(50, label_color[labels]),
+                    Title = $"Label {labels}"
+                };
+
                 var scatter_series = new ScatterSeries
                 {
                     MarkerType = MarkerType.Circle,
@@ -345,8 +351,23 @@ namespace AdaBoostAlgorithm
                     Title = $"Label {labels}"
                 };
 
+                // 決定境界をプロット
+                for (double x = min_x; x <= max_x; x += step)
+                {
+                    for (double y = min_y; y <= max_y; y += step)
+                    {
+                        double[,] grid_point = new double[,] { { x, y } };
+                        int[] prediction = model.Predict(grid_point);
 
-                // ラベルに対応するデータポイントを追加
+                        if (prediction[0] == labels) 
+                        {
+                            grid_scatter_series.Points.Add(new ScatterPoint(x, y));
+                        }
+                    }
+                }
+                plot_model.Series.Add(grid_scatter_series);
+
+                // 元のデータポイントを追加
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     if (label[i] == labels)
@@ -356,13 +377,7 @@ namespace AdaBoostAlgorithm
                 }
                 plot_model.Series.Add(scatter_series);
             }
-
-            return new PlotView
-            {
-                Model = plot_model
-            };
-
-
+            return new PlotView { Model = plot_model };
         }
     }
 }
