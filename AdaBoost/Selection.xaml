@@ -10,7 +10,29 @@
       Title="Page1">
 
     <Grid x:Name="MainGrid">
-      
+        <StackPanel  VerticalAlignment="Center" HorizontalAlignment="Center">
+           
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20">
+                <TextBox x:Name="FilePathTextBox" Width="250" Height="20" >
+
+                </TextBox>
+                <Button Content="参照" Width="50" Height="20" Click="SelectFile"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20">
+                <Label Content="弱識別機の数" FontSize="20"/>
+                <TextBox x:Name="WeakId" Width="100" Height="20" >
+
+                </TextBox>
+               
+            </StackPanel>
+
+
+
+            <!-- ボタン -->
+            <Button Content="結果を表示" Width="50" Height="20" FontSize="15" Click="PlotClick"/>
+            
+        </StackPanel>
     </Grid>
 
     

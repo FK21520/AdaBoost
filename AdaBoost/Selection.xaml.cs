@@ -1,20 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Win32;
+using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using AdaBoostAlgorithm;
-using OxyPlot;
-using OxyPlot.Wpf;
 
 namespace AdaBoost
 {
@@ -23,58 +10,51 @@ namespace AdaBoost
     /// </summary>
     public partial class SELECTION : Page
     {
-        public SELECTION()
+        private int _num_file;
+        public SELECTION(int num_file)
         {
             InitializeComponent();
-            string file_path = "./adaboost_dataset.csv";
-            READCSV read_csv = new READCSV();
-            var (X, label) = read_csv.Read(file_path);
-            ADABOOST adaboost = new ADABOOST(50);
-            adaboost.Fit(X, label);
-
-            int[] pred = adaboost.Predict(X);
-
-            double accuracy = AccuracyScore(label, pred);
-
-            Console.WriteLine($"Accuracy: {accuracy:P2}"); // P2で百分率表示
-
-            for(int i = 0; i < X.GetLength(0); i++)
-            {
-                if (pred[i] != label[i])
-                {
-                    Console.WriteLine($"{i}, {label[i]}, {pred[i]}");
-                }
-            }
-            //PLOT plot = new PLOT();
-            //var plot_view = plot.PlotScatter(X, label);
-            //MainGrid.Children.Add(plot_view); // WPF のウィンドウで表示
-            PLOT plot = new PLOT();
-            PlotView plotView = plot.PlotDecisionRegion(X, label, adaboost);
-
-            // WPF での表示 (適切な WPF アプリケーションで使用)
-             MainGrid.Children.Add(plotView);  // WPF のパネルに追加
-
-            // ここでは Console で結果を表示している
-            Console.WriteLine("プロットを表示しました。");
-
+            _num_file = num_file;
+            Console.WriteLine($"{num_file}");
         }
 
-        public static double AccuracyScore(int[] true_label, int[] predict)
+        private void PlotClick(object sender, RoutedEventArgs e)
         {
-            if (true_label.Length != predict.Length)
+            string file_path = FilePathTextBox.Text;
+            string weak_id = WeakId.Text; //弱識別機の数
+
+            int number = int.Parse(weak_id);
+            // パスを表示
+            if (!string.IsNullOrEmpty(file_path) && !string.IsNullOrEmpty(weak_id))
             {
-                throw new ArgumentException("ラベルと予測の配列の長さが一致しません。");
+                MessageBox.Show($"入力されたファイルパス: {file_path} 弱識別機の数:{weak_id}");
+                var plot_window = new PLOTWINDOW(file_path, number);
+                plot_window.Show();
             }
-
-            // 一致するラベルの数をカウント
-            int correct_count = true_label
-                .Zip(predict, (trueLabel, pred) => trueLabel == pred ? 1 : 0)
-                .Sum();
-
-            // 正解率を計算
-            return (double)correct_count / true_label.Length;
+            else if (string.IsNullOrEmpty(file_path) && !string.IsNullOrEmpty(weak_id))
+            {
+                MessageBox.Show("ファイルパスが入力されていません。", "エラー");
+            }
+            else if (!string.IsNullOrEmpty(file_path) && string.IsNullOrEmpty(weak_id))
+            {
+                MessageBox.Show("弱識別機の数が指定されていません。", "エラー");
+            }
+            else if (!string.IsNullOrEmpty(file_path) && string.IsNullOrEmpty(weak_id))
+            {
+                MessageBox.Show("ファイルと弱識別機の数が指定されていません。", "エラー");
+            }
+           
         }
 
-       
+        private void SelectFile(object sender, RoutedEventArgs e)
+        {
+            // ファイル選択ダイアログを開く
+            OpenFileDialog open_file = new OpenFileDialog();
+            if (open_file.ShowDialog() == true)
+            {
+                // 選択されたファイルのパスをテキストボックスに表示
+                FilePathTextBox.Text = open_file.FileName;
+            }
+        }
     }
 }

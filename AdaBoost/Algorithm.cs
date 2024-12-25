@@ -2,24 +2,19 @@
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Xml.Linq;
-using System.Reflection.Emit;
 
 namespace AdaBoostAlgorithm
 {
     internal class DECISIONSTUMP
     {
-        private int? axis;
-        private int? sign;
-        private double? threshold;
+        private int axis;
+        private int sign;
+        private double threshold;
 
         private double[,] X;
         private int[] z;
 
-        public DECISIONSTUMP(int? axis = null, int? sign = null, double? threshold = null)
+        public DECISIONSTUMP(int axis = 0, int sign = 1, double threshold = 0.0)
         {
             string file_path = "./adaboost_dataset.csv";
             READCSV read_csv = new READCSV();
@@ -179,8 +174,8 @@ namespace AdaBoostAlgorithm
 
             for (int i = 0; i < N; i++)
             {
-                double value = X[i, axis.Value];
-                predictions[i] = (value < threshold) ? -sign.Value : sign.Value;
+                double value = X[i, axis];
+                predictions[i] = (value < threshold) ? -sign : sign;
             }
             return predictions;
         }
@@ -188,7 +183,6 @@ namespace AdaBoostAlgorithm
 
     class ADABOOST
     {
-        
         private int num_classifiers; //クラスの数
         private double[] alpha;
         private List<DECISIONSTUMP> classifiers; //クラス
@@ -321,7 +315,7 @@ namespace AdaBoostAlgorithm
             double max_y = X.Cast<double>().Max();
 
             // 予測範囲のグリッドを作成
-            int resolution = 100; // 解像度
+            int resolution = 140; // 解像度
             double step = Math.Max((max_x - min_x) / resolution, (max_y - min_y) / resolution);
 
             var plot_model = new PlotModel { Title = "AdaBoost Decision Region" };
