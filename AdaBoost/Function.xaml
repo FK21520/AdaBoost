@@ -9,7 +9,7 @@
       Title="Page1">
 
     <Grid>
-        <StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Content="ファイルを1つ" Width="150" Height="50" FontSize="20" Click="Select1Click"/>
             <Button Content="ファイルを2つ" Width="150" Height="50" FontSize="20" Click="Select2Click"/>
         </StackPanel>

@@ -6,30 +6,31 @@ namespace AdaBoost
 {
     public partial class PLOTPAGE : Page
     {
-        public PLOTPAGE(string file_path, int weak_id)
+        public PLOTPAGE(string train_data, string test_data, int weak_id)
         {
             InitializeComponent();
             READCSV read_csv = new READCSV();
-            var (X, label) = read_csv.Read(file_path);
+            var (train_X, train_label) = read_csv.Read(train_data);
+            var (test_X, test_label) = read_csv.Read(test_data);
             ADABOOST adaboost = new ADABOOST(weak_id);
-            adaboost.Fit(X, label);
+            adaboost.Fit(train_X, train_label);
 
-            int[] pred = adaboost.Predict(X);
+            int[] pred = adaboost.Predict(test_X);
 
-            double accuracy = AccuracyScore(label, pred);
+            double accuracy = AccuracyScore(test_label, pred);
 
             Console.WriteLine($"Accuracy: {accuracy:P2}"); // P2で百分率表示
 
-            for (int i = 0; i < X.GetLength(0); i++)
+            for (int i = 0; i < test_X.GetLength(0); i++)
             {
-                if (pred[i] != label[i])
+                if (pred[i] != test_label[i])
                 {
-                    Console.WriteLine($"{i}, {label[i]}, {pred[i]}");
+                    Console.WriteLine($"{i}, {test_label[i]}, {pred[i]}");
                 }
             }
 
             PLOT plot = new PLOT();
-            PlotView plotView = plot.PlotDecisionRegion(X, label, adaboost);
+            PlotView plotView = plot.PlotDecisionRegion(test_X, test_label, adaboost);
 
             // WPF での表示 (適切な WPF アプリケーションで使用)
             plot_grid.Children.Add(plotView);  // WPF のパネルに追加

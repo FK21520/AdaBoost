@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
+using CsvHelper.Configuration;
+using CsvHelper;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
