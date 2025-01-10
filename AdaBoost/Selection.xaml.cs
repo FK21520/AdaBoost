@@ -128,7 +128,7 @@ namespace AdaBoost
 
                 if (!string.IsNullOrEmpty(train_data) && !string.IsNullOrEmpty(test_data) && !string.IsNullOrEmpty(weak_id))
                 {
-                    MessageBox.Show($"入力されたファイルパス: {train_data} {test_data} 弱識別機の数:{weak_id}");
+                    //MessageBox.Show($"入力されたファイルパス: {train_data} {test_data} 弱識別機の数:{weak_id}");
                     var plot_window = new PLOTWINDOW(train_data, test_data, number);
                     plot_window.Show();
                 }

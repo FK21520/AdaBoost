@@ -14,29 +14,17 @@ namespace AdaBoost
             var (test_X, test_label) = read_csv.Read(test_data);
             ADABOOST adaboost = new ADABOOST(weak_id);
             adaboost.Fit(train_X, train_label);
-
+            var closs = new CLOSSVALIDATION(3, weak_id, train_X, train_label);
+            
             int[] pred = adaboost.Predict(test_X);
 
             double accuracy = AccuracyScore(test_label, pred);
 
             Console.WriteLine($"Accuracy: {accuracy:P2}"); // P2で百分率表示
 
-            for (int i = 0; i < test_X.GetLength(0); i++)
-            {
-                if (pred[i] != test_label[i])
-                {
-                    Console.WriteLine($"{i}, {test_label[i]}, {pred[i]}");
-                }
-            }
-
             PLOT plot = new PLOT();
             PlotView plotView = plot.PlotDecisionRegion(test_X, test_label, adaboost);
-
-            // WPF での表示 (適切な WPF アプリケーションで使用)
             plot_grid.Children.Add(plotView);  // WPF のパネルに追加
-
-            // ここでは Console で結果を表示している
-            Console.WriteLine("プロットを表示しました。");
         }
 
         public static double AccuracyScore(int[] true_label, int[] predict)

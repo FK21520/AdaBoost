@@ -5,6 +5,8 @@ using CsvHelper;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
+using System.Windows.Data;
+using System.Windows.Documents;
 
 namespace AdaBoostAlgorithm
 {
@@ -271,6 +273,7 @@ namespace AdaBoostAlgorithm
             try
             {
                 var lines = File.ReadAllLines(file_path).Skip(1).ToArray();
+               
                 var x = lines.Select(line => double.Parse(line.Split(',')[0])).ToArray();
                 var y = lines.Select(line => double.Parse(line.Split(',')[1])).ToArray();
                 var label = lines.Select(line => int.Parse(line.Split(',')[2])).ToArray();
@@ -304,6 +307,7 @@ namespace AdaBoostAlgorithm
             }
             return result;
         }
+
     }
 
     //データポイントを用意してデータポイントに対して予測を行い、境界の色分けをする
@@ -377,4 +381,117 @@ namespace AdaBoostAlgorithm
             return new PlotView { Model = plot_model };
         }
     }
+
+    class CLOSSVALIDATION
+    {
+        public CLOSSVALIDATION(int k, int weak_id, double[,] data, int[] label)
+        {
+            var (fold_data, fold_label) = KFoldSplit(data, label,  k);
+
+            for (int i = 0; i < fold_label.Count; i++)
+            {
+                var test_data = ConvertListTo2DArray(fold_data[i]);
+                var test_label = fold_label[i].ToArray();
+                var train_data = ConvertListTo2DArray(fold_data.Where((_, index) => index != i).SelectMany(f => f).ToList());
+                var train_label = fold_label.Where((_, index) => index != i).SelectMany(f => f).ToList().ToArray();
+                Console.WriteLine($"{test_data.GetLength(1)}11111");
+                
+
+                //ADABOOST adaboost = new ADABOOST(weak_id);
+                //adaboost.Fit(train_data, train_label);
+                
+                //int[] prediction = adaboost.Predict(test_data);
+
+                //double accuracy = AccuracyScore(test_label, prediction);
+
+                //Console.WriteLine($"Accuracy: {accuracy:P2}"); // P2で百分率表示
+
+            }
+        }
+
+        private (List<List<double[]>> fold_data, List<List<int>> fold_label) KFoldSplit(double[,] data, int[] label, int f)
+        {
+            int seed = 42;
+            var random = new Random(seed);
+
+            var data_list = new List<(double[], int)>(); //データとラベルを結合
+            int row_count = data.GetLength(0);
+            int col_count = data.GetLength(1);
+
+            for (int i = 0; i < f; i++)
+            {
+                var row = new double[col_count];
+                for(int j = 0; j < col_count; j++)
+                {
+                    row[j] = data[i, j];
+                }
+                data_list.Add((row, label[i]));
+            }
+
+            var shuffled_data = data_list.OrderBy(x => random.Next()).ToList();
+
+            // フォールドに分割
+            var fold_data = new List<List<double[]>>();
+            var fold_label = new List<List<int>>();
+            int fold_size = (int)Math.Ceiling((double)shuffled_data.Count / f);
+
+            for (int i = 0; i < f; i++)
+            {
+                var fold = shuffled_data.Skip(i * fold_size).Take(fold_size).ToList();
+
+                var data_part = fold.Select(item => item.Item1).ToList(); // 特徴量
+                var label_part = fold.Select(item => item.Item2).ToList(); // ラベル
+                Console.WriteLine($"{data_}9999999");
+
+                fold_data.Add(data_part);
+                fold_label.Add(label_part);
+            }
+
+            for(int p =0; p < fold_data.Count; p++)
+            { 
+                Console.WriteLine($"{fold_data[p]}888888");
+                
+                
+            }
+            return (fold_data, fold_label);
+        }
+
+        private static double[,] ConvertListTo2DArray(List<double[]> list) //listをdouble[,]に変換
+        {
+            int row_count = list.Count;
+            int colCount = list[0].Length;
+            var result = new double[row_count, colCount];
+            for (int i = 0; i < row_count; i++)
+            {
+                for (int j = 0; j < colCount; j++)
+                {
+                    result[i, j] = list[i][j];
+                }
+            }
+            return result;
+        }
+
+        public class DataRow
+        {
+            public (double, double) X { get; set; } // 特徴量
+            public int label { get; set; }          // ラベル
+        }
+
+        public static double AccuracyScore(int[] true_label, int[] predict)
+        {
+            if (true_label.Length != predict.Length)
+            {
+                throw new ArgumentException("ラベルと予測の配列の長さが一致しません。");
+            }
+
+            // 一致するラベルの数をカウント
+            int correct_count = true_label
+                .Zip(predict, (trueLabel, pred) => trueLabel == pred ? 1 : 0)
+                .Sum();
+
+            // 正解率を計算
+            return (double)correct_count / true_label.Length;
+        }
+    }
+
 }
