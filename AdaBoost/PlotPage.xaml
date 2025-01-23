@@ -7,8 +7,14 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="PLOTPAGE">
-
-    <Grid x:Name="plot_grid">
-        
+    <Grid>
+        <ItemsControl x:Name="plot_stack_panel">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                    <!-- 横一列に自動調整 -->
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
     </Grid>
 </Page>

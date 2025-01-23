@@ -19,10 +19,10 @@ namespace AdaBoost
     /// </summary>
     public partial class PLOTWINDOW : Window
     {
-        public PLOTWINDOW(string train_data, string test_data, int weak_id)
+        public PLOTWINDOW(int weak_id, int fold_num, params string[] file_path)
         {
             InitializeComponent();
-            plot_frame.Navigate(new PLOTPAGE(train_data, test_data, weak_id));
+            plot_frame.Navigate(new PLOTPAGE(weak_id, fold_num,  file_path));
         }
     }
 }

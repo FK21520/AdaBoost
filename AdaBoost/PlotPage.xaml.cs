@@ -1,33 +1,63 @@
 ﻿using AdaBoostAlgorithm;
 using OxyPlot.Wpf;
 using System.Windows.Controls;
+using DataProcessing;
+using System.Windows;
 
 namespace AdaBoost
 {
     public partial class PLOTPAGE : Page
     {
-        public PLOTPAGE(string train_data, string test_data, int weak_id)
+        private List<PlotView> plotViews = new List<PlotView>();
+
+        public PLOTPAGE(int weak_id, int fold_num, params string[] file_path)
         {
             InitializeComponent();
             READCSV read_csv = new READCSV();
-            var (train_X, train_label) = read_csv.Read(train_data);
-            var (test_X, test_label) = read_csv.Read(test_data);
             ADABOOST adaboost = new ADABOOST(weak_id);
-            adaboost.Fit(train_X, train_label);
-            var closs = new CLOSSVALIDATION(3, weak_id, train_X, train_label);
-            
-            int[] pred = adaboost.Predict(test_X);
+            if (file_path.Length == 1)//選択データが一つ
+            {
+                var (X, label) = read_csv.Read(file_path[0]);
+                var closs = new CLOSSVALIDATION(fold_num, weak_id, X, label);
+                plotViews = closs.GetPlots();
 
-            double accuracy = AccuracyScore(test_label, pred);
+                foreach (var plotView in plotViews)
+                {
+                    plotView.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    plotView.VerticalAlignment = VerticalAlignment.Stretch;
+                    plotView.SetValue(Grid.RowProperty, 0); // 1行目に配置
+                    plot_stack_panel.Items.Add(plotView);
+                }
+            }
+            else if(file_path.Length == 2)//選択データがつ
+            {
+                var (train_X, train_label) = read_csv.Read(file_path[0]);
+                var (test_X, test_label) = read_csv.Read(file_path[1]);
+                adaboost.Fit(train_X, train_label);
+                int[] pred = adaboost.Predict(test_X);
+                double accuracy = AccuracyScore(test_label, pred);
 
-            Console.WriteLine($"Accuracy: {accuracy:P2}"); // P2で百分率表示
-
-            PLOT plot = new PLOT();
-            PlotView plotView = plot.PlotDecisionRegion(test_X, test_label, adaboost);
-            plot_grid.Children.Add(plotView);  // WPF のパネルに追加
+                PLOT plot = new PLOT();
+                PlotView plotView = plot.PlotDecisionRegion(test_X, test_label, adaboost);
+                plotView.HorizontalAlignment = HorizontalAlignment.Stretch;
+                plotView.VerticalAlignment = VerticalAlignment.Stretch;
+                plot_stack_panel.Items.Add(plotView);
+            }
+            this.SizeChanged += SizeChange;
         }
 
-        public static double AccuracyScore(int[] true_label, int[] predict)
+        //グラフのサイズ調整
+        private void SizeChange(object sender, SizeChangedEventArgs e)
+        {
+            double size = Math.Min(plot_stack_panel.ActualWidth / plotViews.Count, plot_stack_panel.ActualHeight);
+            foreach (var plot_view in plotViews)
+            {
+                plot_view.Width = size;
+                plot_view.Height = size;
+            }
+        }
+
+        private double AccuracyScore(int[] true_label, int[] predict)
         {
             if (true_label.Length != predict.Length)
             {

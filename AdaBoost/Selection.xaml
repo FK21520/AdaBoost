@@ -11,7 +11,7 @@
 
     <Grid x:Name="MainGrid">
         <StackPanel  VerticalAlignment="Center" HorizontalAlignment="Center">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                 <TextBox x:Name="train_path_text_box" Width="250" Height="20" >
                 </TextBox>
                 <Button Content="参照" Width="50" Height="20" Click="SelectTrainFile"/>
@@ -23,9 +23,18 @@
                 <Button Content="参照" Width="50" Height="20" Click="SelectTestFile"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0">
                 <Label Content="弱識別機の数" FontSize="20"/>
                 <TextBox x:Name="weak_id_pannel" Width="100" Height="20" >
+                </TextBox>
+                <ComboBox Name="proc_combox" Width="70" Height="20" ItemsSource="{Binding proc}"
+                          SelectionChanged="TestProc"/>
+
+            </StackPanel>
+
+            <StackPanel x:Name="fold_pannel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0">
+                <Label Content="分割数" FontSize="20"/>
+                <TextBox x:Name="fold_text" Width="100" Height="20" >
                 </TextBox>
             </StackPanel>
 
