@@ -6,9 +6,6 @@ using DataProcessing;
 
 namespace AdaBoost
 {
-    /// <summary>
-    /// Page1.xaml の相互作用ロジック
-    /// </summary>
     public partial class SELECTION : Page
     {
         private int _num_file;
@@ -25,13 +22,17 @@ namespace AdaBoost
                 proc = new List<string> { "シンプル", "クロスバリデーション" };
                 DataContext = this;
                 proc_combox.SelectedItem = "シンプル"; //初期値
+                train_data.Content = "データを選択";
             }
             else
             {
                 proc_combox.Visibility = Visibility.Collapsed;
                 fold_pannel.Visibility = Visibility.Collapsed;
+                train_data.Content = "教師データを選択";
+                test_data.Content = "テストデータを選択";
             }
             weak_id_pannel.Text = "50"; //弱識別機数の初期値
+            fold_text.Text = "3"; //クロスバリデーションの初期値
         }
 
         private void TestProc(object sender, SelectionChangedEventArgs e)
@@ -45,7 +46,6 @@ namespace AdaBoost
                 {
                     _fold_flag = 0;
                     fold_pannel.Visibility = Visibility.Collapsed;
-                    
                 }
                 else
                 {

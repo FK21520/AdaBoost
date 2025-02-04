@@ -18,8 +18,11 @@ namespace AdaBoost
             if (file_path.Length == 1)//選択データが一つ
             {
                 var (X, label) = read_csv.Read(file_path[0]);
-                var closs = new CLOSSVALIDATION(fold_num, weak_id, X, label);
+                var closs = new CLOSSVALIDATION();
+                closs.CLOSSVALIDATIONMETHOD(fold_num, weak_id, X, label);
                 plotViews = closs.GetPlots();
+
+                double averageScore = closs.average_score; 
 
                 foreach (var plotView in plotViews)
                 {
@@ -28,6 +31,9 @@ namespace AdaBoost
                     plotView.SetValue(Grid.RowProperty, 0); // 1行目に配置
                     plot_stack_panel.Items.Add(plotView);
                 }
+                Console.WriteLine($"{averageScore:P2}");
+
+                average.Content = $"Average Score {averageScore:P2}";
             }
             else if(file_path.Length == 2)//選択データがつ
             {
@@ -38,7 +44,7 @@ namespace AdaBoost
                 double accuracy = AccuracyScore(test_label, pred);
 
                 PLOT plot = new PLOT();
-                PlotView plotView = plot.PlotDecisionRegion(test_X, test_label, adaboost);
+                PlotView plotView = plot.PlotDecisionRegion(test_X, test_label, accuracy, adaboost);
                 plotView.HorizontalAlignment = HorizontalAlignment.Stretch;
                 plotView.VerticalAlignment = VerticalAlignment.Stretch;
                 plot_stack_panel.Items.Add(plotView);

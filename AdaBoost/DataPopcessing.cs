@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Windows;
 using OxyPlot.Wpf;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DataProcessing
 {
@@ -126,11 +127,13 @@ namespace DataProcessing
     class CLOSSVALIDATION
     {
         private List<PlotView> plots = new List<PlotView>(); // 各フォールドのプロットを保存するリスト
+        public double average_score { get; private set; }  // プロパティとして保持
 
-        public CLOSSVALIDATION(int k, int weak_id, double[,] data, int[] label)
+        public void CLOSSVALIDATIONMETHOD(int k, int weak_id, double[,] data, int[] label)
         {
             var (fold_data, fold_label) = KFoldSplit(data, label, k);
             double sum_score = 0;
+
             for (int i = 0; i < fold_label.Count; i++)
             {
                 var test_data = ConvertListTo2DArray(fold_data[i]);
@@ -145,14 +148,13 @@ namespace DataProcessing
 
                 double accuracy = AccuracyScore(test_label, prediction);
 
-                Console.WriteLine($"Accuracy: {accuracy:P2}"); // P2で百分率表示
                 sum_score += accuracy;
 
                 PLOT plotter = new PLOT();
-                PlotView plotView = plotter.PlotDecisionRegion(test_data, test_label, adaboost);
+                PlotView plotView = plotter.PlotDecisionRegion(test_data, test_label, accuracy, adaboost);
                 plots.Add(plotView);
             }
-            double average_score = sum_score / k;
+            average_score = sum_score / k;
             Console.WriteLine($"avrage: {average_score:P2}"); //スコア平均
         }
 
@@ -215,6 +217,7 @@ namespace DataProcessing
             return result;
         }
 
+        //正答率計算
         public static double AccuracyScore(int[] true_label, int[] predict)
         {
             if (true_label.Length != predict.Length)
@@ -227,7 +230,6 @@ namespace DataProcessing
                 .Zip(predict, (trueLabel, pred) => trueLabel == pred ? 1 : 0)
                 .Sum();
 
-            // 正解率を計算
             return (double)correct_count / true_label.Length;
         }
     }

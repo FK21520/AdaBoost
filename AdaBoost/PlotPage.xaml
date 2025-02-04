@@ -16,5 +16,6 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+        <Label x:Name="average" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
     </Grid>
 </Page>

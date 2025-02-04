@@ -2,6 +2,11 @@
 using OxyPlot.Series;
 using OxyPlot.Wpf;
 using DataProcessing;
+using static System.Formats.Asn1.AsnWriter;
+using System.Windows.Controls;
+using OxyPlot.Annotations;
+using System.Data;
+using OxyPlot.Axes;
 
 namespace AdaBoostAlgorithm
 {
@@ -261,7 +266,7 @@ namespace AdaBoostAlgorithm
     //データポイントを用意してデータポイントに対して予測を行い、境界の色分けをする
     class PLOT
     {
-        public PlotView PlotDecisionRegion(double[,] X, int[] label, ADABOOST model)
+        public PlotView PlotDecisionRegion(double[,] X, int[] label, double score, ADABOOST model)
         {
             int N = X.GetLength(0);
             double min_x = X.Cast<double>().Min();
@@ -281,7 +286,6 @@ namespace AdaBoostAlgorithm
                     { -1, OxyColors.Blue },
                     { 1, OxyColors.Red }
                 };
-
    
             // 各ラベルごとに散布図シリーズを作成
             foreach (var labels in label_color.Keys)
@@ -326,7 +330,18 @@ namespace AdaBoostAlgorithm
                 }
                 plot_model.Series.Add(scatter_series);
             }
-            return new PlotView { Model = plot_model };
+
+            //x軸のタイトルにスコアを表示
+            plot_model.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Bottom,
+                Title = $"Score: {score:P2}",
+                Minimum = min_y,
+                Maximum = max_y
+            });
+
+            return new PlotView { Model = plot_model};
+
         }
     }
 }
