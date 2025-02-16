@@ -1,0 +1,9 @@
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\AdaBoost.exe
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\AdaBoost.dll
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\AdaBoost.deps.json
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\AdaBoost.runtimeconfig.json
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\AdaBoost.pdb
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\CsvHelper.dll
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\OxyPlot.dll
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\OxyPlot.Wpf.dll
+C:\Users\fk100\Desktop\uploadApp\AdaBoostApp\OxyPlot.Wpf.Shared.dll

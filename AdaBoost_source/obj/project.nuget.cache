@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "ayHVDYFT5gE=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\fk100\\Desktop\\makeApp\\AdaBoost\\AdaBoost\\AdaBoost.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\fk100\\.nuget\\packages\\csvhelper\\33.0.1\\csvhelper.33.0.1.nupkg.sha512",
+    "C:\\Users\\fk100\\.nuget\\packages\\oxyplot.core\\2.2.0\\oxyplot.core.2.2.0.nupkg.sha512",
+    "C:\\Users\\fk100\\.nuget\\packages\\oxyplot.wpf\\2.2.0\\oxyplot.wpf.2.2.0.nupkg.sha512",
+    "C:\\Users\\fk100\\.nuget\\packages\\oxyplot.wpf.shared\\2.2.0\\oxyplot.wpf.shared.2.2.0.nupkg.sha512"
+  ],
+  "logs": []
+}
